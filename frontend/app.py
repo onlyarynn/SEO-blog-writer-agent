@@ -15,6 +15,17 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple
 import pandas as pd
 import streamlit as st
 
+# SECRET INJECTION — must happen before any backend import
+def _bootstrap_secrets() -> None:
+    try:
+        for key, value in st.secrets.items():
+            if isinstance(value, str) and key not in os.environ:
+                os.environ[key] = value
+    except Exception:
+        pass
+
+_bootstrap_secrets()
+
 from backend.graph import app, State
 
 OUTPUTS_DIR = Path("outputs")
