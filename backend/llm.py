@@ -6,10 +6,24 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Ensure the key is set in environment before initialising the client
-_key = os.getenv("ANTHROPIC_API_KEY", "")
-if _key:
-    os.environ["ANTHROPIC_API_KEY"] = _key
+# On Streamlit Cloud, secrets live in st.secrets not os.environ.
+# We read from st.secrets first, then fall back to os.getenv (local .env).
+try:
+    import streamlit as st
+    _key = (
+        st.secrets.get("ANTHROPIC_API_KEY", "")
+        or os.getenv("ANTHROPIC_API_KEY", "")
+    )
+except Exception:
+    _key = os.getenv("ANTHROPIC_API_KEY", "")
+
+if not _key:
+    raise ValueError(
+        "ANTHROPIC_API_KEY is not set. "
+        "Add it to Streamlit Cloud secrets or your local .env file."
+    )
+
+os.environ["ANTHROPIC_API_KEY"] = _key
 
 from langchain_anthropic import ChatAnthropic
 
